@@ -1,0 +1,5 @@
+{
+  "name": "CVLM - CRM",
+  "description": "Une application intelligente pour gérer les profils de candidats. Collez le texte brut d'un CV et extrayez automatiquement des données structurées avec Google Gemini.",
+  "requestFramePermissions": []
+}
