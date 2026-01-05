@@ -3,12 +3,15 @@ import { CVParserResponse } from "../types";
 
 export const parseCVRawText = async (rawText: string): Promise<CVParserResponse> => {
   try {
+    // On récupère la clé directement depuis process.env à chaque appel
+    // Elle peut avoir été injectée après le chargement initial par le sélecteur de clé
     const apiKey = process.env.API_KEY;
+    
     if (!apiKey) {
-        throw new Error("Clé API manquante (process.env.API_KEY).");
+        throw new Error("Clé API manquante. Veuillez cliquer sur le bouton de configuration.");
     }
     
-    // Initialisation d'une nouvelle instance à chaque appel pour garantir la fraîcheur de la clé
+    // Toujours créer une nouvelle instance avant l'appel
     const ai = new GoogleGenAI({ apiKey });
 
     const response = await ai.models.generateContent({
@@ -80,6 +83,10 @@ export const parseCVRawText = async (rawText: string): Promise<CVParserResponse>
     return JSON.parse(text) as CVParserResponse;
   } catch (error: any) {
     console.error("Erreur Gemini Service:", error);
+    // Si l'erreur indique un problème de ressource non trouvée, c'est souvent lié à la clé
+    if (error.message && error.message.includes("Requested entity was not found")) {
+      throw new Error("La clé API sélectionnée est invalide ou n'a pas accès au modèle.");
+    }
     throw error;
   }
 };
