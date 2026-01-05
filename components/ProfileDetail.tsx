@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Profile, RequestStatus, CVRequest } from '../types';
-import { Mail, Phone, MapPin, Calendar, Building, GraduationCap, ArrowLeft, Download, Globe, Award, Heart, Users, User, Ticket, CheckCircle2, Clock, AlertCircle, BarChart3, Tag, Copy, ExternalLink, Link as LinkIcon, Edit2, Save, X } from 'lucide-react';
+import { 
+  Mail, Phone, MapPin, ArrowLeft, User, Ticket, 
+  CheckCircle2, Clock, AlertCircle, Tag, ExternalLink, 
+  Edit2, Save, X, Loader2 
+} from 'lucide-react';
 
 interface ProfileDetailProps {
   profile: Profile;
@@ -95,7 +99,7 @@ const ProfileDetail: React.FC<ProfileDetailProps> = ({ profile, allProfiles, onB
       case 'PENDING':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1"/> En Attente</span>;
       case 'IN_PROGRESS':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><Loader2Icon className="w-3 h-3 mr-1"/> En Cours</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><Loader2 className="w-3 h-3 mr-1 animate-spin"/> En Cours</span>;
       case 'DELIVERED':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><CheckCircle2 className="w-3 h-3 mr-1"/> Livré</span>;
       case 'CANCELLED':
@@ -103,14 +107,6 @@ const ProfileDetail: React.FC<ProfileDetailProps> = ({ profile, allProfiles, onB
       default: return null;
     }
   };
-
-  // Helper icon for statuses inside the switch logic simplified above
-  const Loader2Icon = ({className}:{className?:string}) => (
-    <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-  );
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -229,7 +225,7 @@ const ProfileDetail: React.FC<ProfileDetailProps> = ({ profile, allProfiles, onB
         {/* RIGHT COLUMN: Pipeline & Details */}
         <div className="lg:col-span-2 space-y-6">
           
-          {/* Requests Pipeline "The Parent Bubble" */}
+          {/* Requests Pipeline */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
              <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                 <h2 className="text-lg font-bold text-gray-900 flex items-center">
@@ -259,7 +255,7 @@ const ProfileDetail: React.FC<ProfileDetailProps> = ({ profile, allProfiles, onB
                                    {/* Display Code USED for this request */}
                                    <div className="flex items-center mt-2 space-x-2 h-8">
                                      {isEditingThisRequest ? (
-                                       <div className="flex items-center space-x-1 animate-in fade-in duration-200">
+                                       <div className="flex items-center space-x-1">
                                          <input
                                            type="text"
                                            value={tempRequestCode}
@@ -296,7 +292,6 @@ const ProfileDetail: React.FC<ProfileDetailProps> = ({ profile, allProfiles, onB
                                             </span>
                                           )}
                                           
-                                          {/* Edit Button for Used Code */}
                                           <button 
                                             onClick={(e) => startEditingRequestCode(req, e)}
                                             className="ml-2 text-gray-300 hover:text-indigo-500 opacity-0 group-hover/code:opacity-100 group-hover:opacity-100 transition-all p-1"

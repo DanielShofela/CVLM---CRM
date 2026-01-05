@@ -1,10 +1,15 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { CVParserResponse } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 export const parseCVRawText = async (rawText: string): Promise<CVParserResponse> => {
   try {
+    // Initialize inside the function to prevent app crash on load if process.env is undefined in browser
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+        throw new Error("La clé API (process.env.API_KEY) est manquante. Vérifiez la configuration Netlify.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
+
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `Extraire les informations suivantes de ce texte (qui peut être un CV ou une soumission de formulaire) dans un format JSON structuré.

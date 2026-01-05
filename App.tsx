@@ -11,13 +11,22 @@ const MOCK_PROFILES: Profile[] = [];
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('LIST');
   const [profiles, setProfiles] = useState<Profile[]>(() => {
-    const saved = localStorage.getItem('cv_profiles');
-    return saved ? JSON.parse(saved) : MOCK_PROFILES;
+    try {
+      const saved = localStorage.getItem('cv_profiles');
+      return saved ? JSON.parse(saved) : MOCK_PROFILES;
+    } catch (e) {
+      console.error("Erreur de lecture du localStorage, retour aux données vides", e);
+      return MOCK_PROFILES;
+    }
   });
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    localStorage.setItem('cv_profiles', JSON.stringify(profiles));
+    try {
+      localStorage.setItem('cv_profiles', JSON.stringify(profiles));
+    } catch (e) {
+      console.error("Erreur de sauvegarde dans le localStorage", e);
+    }
   }, [profiles]);
 
   const handleSaveProfile = (newProfile: Profile) => {
