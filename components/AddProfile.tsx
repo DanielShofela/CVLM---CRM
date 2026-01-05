@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { parseCVRawText } from '../services/geminiService';
 import { CVParserResponse, Profile, CVRequest } from '../types';
-import { Loader2, ArrowRight, Save, RotateCcw, AlertCircle, Ticket, UserPlus } from 'lucide-react';
+import { Loader2, Sparkles, ArrowRight, Save, RotateCcw, AlertCircle, ClipboardCheck, Info } from 'lucide-react';
 
 const generateId = () => Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
 
@@ -27,8 +27,7 @@ const AddProfile: React.FC<AddProfileProps> = ({ onSave, onCancel }) => {
       setParsedData(data);
       setStep('REVIEW');
     } catch (err: any) {
-      console.error("Détails de l'erreur d'analyse:", err);
-      setError(`Échec : ${err.message || "Erreur de connexion ou clé API invalide."}`);
+      setError(err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -43,23 +42,23 @@ const AddProfile: React.FC<AddProfileProps> = ({ onSave, onCancel }) => {
   const handleSave = () => {
     if (parsedData) {
       const initialRequest: CVRequest = {
-        id: generateId(),
+        id: 'REQ-' + generateId().substring(0, 5).toUpperCase(),
         date: new Date().toISOString(),
         status: 'PENDING',
         promoCode: parsedData.extractedPromoCode || '',
-        details: parsedData.extractedRequestDetails || 'Import Initial'
+        details: parsedData.extractedRequestDetails || 'Import manuel'
       };
 
       const newProfile: Profile = {
-        id: generateId(),
+        id: 'PR-' + generateId().substring(0, 5).toUpperCase(),
         ...parsedData,
-        jobTitle: parsedData.jobTitle || '',
-        nationality: parsedData.nationality || '',
-        birthYear: parsedData.birthYear || '',
-        portfolioUrl: parsedData.portfolioUrl || '',
-        certifications: parsedData.certifications || [],
-        interests: parsedData.interests || [],
-        references: parsedData.references || [],
+        jobTitle: parsedData.jobTitle || 'Sans titre',
+        nationality: '',
+        birthYear: '',
+        portfolioUrl: '',
+        certifications: [],
+        interests: [],
+        references: [],
         ownPromoCode: parsedData.extractedOwnPromoCode || '',
         createdAt: new Date().toISOString(),
         requests: [initialRequest],
@@ -73,58 +72,64 @@ const AddProfile: React.FC<AddProfileProps> = ({ onSave, onCancel }) => {
 
   if (step === 'INPUT') {
     return (
-      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="p-6 md:p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Importer un Nouveau Prospect</h2>
-          <p className="text-gray-500 mb-6">Collez le texte brut d'une soumission de formulaire ou d'un CV.</p>
-          
-          <div className="relative">
-            <textarea
-              value={rawText}
-              onChange={(e) => setRawText(e.target.value)}
-              placeholder="Collez le contenu ici..."
-              className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none font-mono text-sm"
-            />
-          </div>
-
-          {error && (
-            <div className="mt-4 p-4 bg-red-50 rounded-lg flex items-start text-red-700 text-sm border border-red-100">
-              <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+      <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+          <div className="p-8">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="p-3 bg-indigo-100 rounded-xl">
+                <Sparkles className="h-6 w-6 text-indigo-600" />
+              </div>
               <div>
-                <p className="font-bold">Une erreur est survenue</p>
-                <p className="opacity-80">{error}</p>
+                <h2 className="text-2xl font-bold text-slate-900">Nouvel Import IA</h2>
+                <p className="text-slate-500">Collez le contenu pour une extraction automatique.</p>
               </div>
             </div>
-          )}
+            
+            <div className="relative group">
+              <textarea
+                value={rawText}
+                onChange={(e) => setRawText(e.target.value)}
+                placeholder="Exemple : Nom: Jean Dupont, Email: jean@mail.com, Demande: Je souhaite un CV design avec le code promo REDUC20..."
+                className="w-full h-80 p-5 border-2 border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all resize-none font-medium text-slate-700 bg-slate-50/50"
+              />
+              <div className="absolute bottom-4 right-4 text-xs text-slate-400 font-medium">
+                {rawText.length} caractères
+              </div>
+            </div>
 
-          <div className="mt-6 flex justify-end space-x-3">
-            <button
-              onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              onClick={handleProcess}
-              disabled={isProcessing || !rawText.trim()}
-              className={`flex items-center px-6 py-2 rounded-lg text-sm font-medium text-white transition-all ${
-                isProcessing || !rawText.trim()
-                  ? 'bg-indigo-400 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700 shadow-md hover:shadow-lg'
-              }`}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                  Traitement IA...
-                </>
-              ) : (
-                <>
-                  Analyser & Créer Commande
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </button>
+            {error && (
+              <div className="mt-6 p-4 bg-red-50 rounded-xl border border-red-100 flex items-center text-red-700 animate-in shake duration-300">
+                <AlertCircle className="h-5 w-5 mr-3 flex-shrink-0" />
+                <p className="text-sm font-semibold">{error}</p>
+              </div>
+            )}
+
+            <div className="mt-8 flex justify-between items-center">
+              <button onClick={onCancel} className="text-slate-500 hover:text-slate-800 font-bold transition-colors">
+                Annuler
+              </button>
+              <button
+                onClick={handleProcess}
+                disabled={isProcessing || !rawText.trim()}
+                className={`flex items-center px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all ${
+                  isProcessing || !rawText.trim()
+                    ? 'bg-slate-300 cursor-not-allowed'
+                    : 'bg-indigo-600 hover:bg-indigo-700 hover:scale-105 active:scale-95'
+                }`}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                    Analyse en cours...
+                  </>
+                ) : (
+                  <>
+                    Lancer l'Analyse IA
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -132,104 +137,110 @@ const AddProfile: React.FC<AddProfileProps> = ({ onSave, onCancel }) => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Vérifier Prospect & Demande</h2>
-        </div>
-        <button 
-          onClick={() => setStep('INPUT')}
-          className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center font-medium"
-        >
-          <RotateCcw className="h-4 w-4 mr-1" />
-          Recommencer
+    <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-right-4 duration-500">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-3xl font-extrabold text-slate-900">Vérification des données</h2>
+        <button onClick={() => setStep('INPUT')} className="flex items-center text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors">
+          <RotateCcw className="h-4 w-4 mr-2" />
+          Réinitialiser
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 md:p-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div className="bg-indigo-50 p-6 rounded-lg border border-indigo-100">
-                <h3 className="text-indigo-900 font-bold mb-4 flex items-center">
-                   <Ticket className="h-5 w-5 mr-2" />
-                   Commande & Promo Utilisée
-                </h3>
-                <div className="space-y-4">
-                   <div>
-                      <label className="block text-sm font-medium text-indigo-900 mb-1">Code Promo (Utilisé)</label>
-                      <input
-                       type="text"
-                       value={parsedData?.extractedPromoCode || ''}
-                       onChange={(e) => handleFieldChange('extractedPromoCode', e.target.value)}
-                       className="w-full px-3 py-2 border border-indigo-200 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                     />
-                   </div>
-                   <div>
-                      <label className="block text-sm font-medium text-indigo-900 mb-1">Détails de la demande</label>
-                      <input
-                       type="text"
-                       value={parsedData?.extractedRequestDetails || ''}
-                       onChange={(e) => handleFieldChange('extractedRequestDetails', e.target.value)}
-                       className="w-full px-3 py-2 border border-indigo-200 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                     />
-                   </div>
-                </div>
-             </div>
-
-             <div className="bg-purple-50 p-6 rounded-lg border border-purple-100">
-                <h3 className="text-purple-900 font-bold mb-4 flex items-center">
-                   <UserPlus className="h-5 w-5 mr-2" />
-                   Nouveau Code Parrainage
-                </h3>
-                <div>
-                   <label className="block text-sm font-medium text-purple-900 mb-1">Code Personnel (à partager)</label>
-                   <input
-                    type="text"
-                    value={parsedData?.extractedOwnPromoCode || ''}
-                    onChange={(e) => handleFieldChange('extractedOwnPromoCode', e.target.value)}
-                    className="w-full px-3 py-2 border border-purple-200 rounded-md focus:ring-purple-500 focus:border-purple-500 font-bold"
-                  />
-                </div>
-             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
-            <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nom Complet</label>
-              <input
-                type="text"
-                value={parsedData?.fullName || ''}
-                onChange={(e) => handleFieldChange('fullName', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                value={parsedData?.email || ''}
-                onChange={(e) => handleFieldChange('email', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
-              <input
-                type="text"
-                value={parsedData?.phone || ''}
-                onChange={(e) => handleFieldChange('phone', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Résumé de l'analyse */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+              <Info className="h-5 w-5 mr-2 text-indigo-500" />
+              Informations Personnelles
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="col-span-2">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nom Complet</label>
+                <input
+                  type="text"
+                  value={parsedData?.fullName || ''}
+                  onChange={(e) => handleFieldChange('fullName', e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold text-slate-700"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Email</label>
+                <input
+                  type="email"
+                  value={parsedData?.email || ''}
+                  onChange={(e) => handleFieldChange('email', e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Téléphone</label>
+                <input
+                  type="text"
+                  value={parsedData?.phone || ''}
+                  onChange={(e) => handleFieldChange('phone', e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="px-6 py-4 bg-gray-50 -mx-6 -mb-6 border-t border-gray-200 flex justify-end space-x-3">
-            <button onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-700">Annuler</button>
-            <button onClick={handleSave} className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium">
-              <Save className="h-4 w-4 mr-2" />
-              Confirmer & Enregistrer
-            </button>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+              <ClipboardCheck className="h-5 w-5 mr-2 text-green-500" />
+              Demande Extraite
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Objet de la demande</label>
+                <textarea
+                  value={parsedData?.extractedRequestDetails || ''}
+                  onChange={(e) => handleFieldChange('extractedRequestDetails', e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 h-24 resize-none"
+                />
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Colonne Codes Promo */}
+        <div className="space-y-6">
+          <div className="bg-indigo-600 rounded-2xl shadow-xl p-6 text-white">
+            <h3 className="font-bold flex items-center mb-6">
+              <Sparkles className="h-5 w-5 mr-2" />
+              Codes Promo
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-indigo-500/30 p-4 rounded-xl border border-indigo-400/30">
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-70 mb-1">Code Utilisé</label>
+                <input
+                  type="text"
+                  value={parsedData?.extractedPromoCode || ''}
+                  onChange={(e) => handleFieldChange('extractedPromoCode', e.target.value)}
+                  className="w-full bg-transparent border-b border-indigo-300 font-mono font-bold text-xl uppercase outline-none focus:border-white transition-colors"
+                  placeholder="AUCUN"
+                />
+              </div>
+              <div className="bg-white/10 p-4 rounded-xl border border-white/10">
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-70 mb-1">Code Parrainage Client</label>
+                <input
+                  type="text"
+                  value={parsedData?.extractedOwnPromoCode || ''}
+                  onChange={(e) => handleFieldChange('extractedOwnPromoCode', e.target.value)}
+                  className="w-full bg-transparent border-b border-indigo-300 font-mono font-bold text-xl uppercase outline-none focus:border-white transition-colors"
+                  placeholder="À DÉFINIR"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <button
+            onClick={handleSave}
+            className="w-full py-5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-black text-lg shadow-xl shadow-green-200 flex items-center justify-center transition-all hover:scale-[1.02] active:scale-95"
+          >
+            <Save className="h-6 w-6 mr-3" />
+            Enregistrer le Prospect
+          </button>
         </div>
       </div>
     </div>

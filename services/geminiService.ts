@@ -2,23 +2,27 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { CVParserResponse } from "../types";
 
 export const parseCVRawText = async (rawText: string): Promise<CVParserResponse> => {
+  // Utilisation directe de la clé de l'environnement comme requis par les instructions
   const apiKey = process.env.API_KEY;
   
   if (!apiKey) {
-    throw new Error("Clé API absente de l'environnement. Veuillez la configurer via le bouton 'Configurer'.");
+    throw new Error("Clé API manquante dans l'environnement. Vérifiez la configuration système.");
   }
 
   try {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Analyse ce texte de CV ou formulaire et retourne un JSON structuré. 
-      Extrais spécifiquement : 
-      - extractedPromoCode: le code promo UTILISÉ pour cette demande.
-      - extractedOwnPromoCode: le code personnel du candidat s'il en mentionne un pour parrainage.
-      - extractedRequestDetails: un résumé de sa demande actuelle.
+      contents: `Tu es un assistant de recrutement expert. Analyse le texte suivant (CV, formulaire ou message) et extrait les informations structurées en JSON.
       
-      Texte : ${rawText}`,
+      RÈGLES D'EXTRACTION :
+      1. extractedPromoCode : Le code de réduction ou code promo que la personne UTILISE pour sa demande actuelle.
+      2. extractedOwnPromoCode : Le code personnel unique que la personne propose de partager (parrainage).
+      3. extractedRequestDetails : Un résumé concis de ce que la personne demande (ex: "Refonte CV Design", "Lettre de motivation Luxe").
+      4. Si une information est absente, laisse une chaîne vide.
+      
+      TEXTE À ANALYSER :
+      ${rawText}`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -64,13 +68,11 @@ export const parseCVRawText = async (rawText: string): Promise<CVParserResponse>
     });
 
     const text = response.text;
-    if (!text) throw new Error("L'IA n'a retourné aucun contenu.");
+    if (!text) throw new Error("Réponse de l'IA vide.");
+    
     return JSON.parse(text) as CVParserResponse;
   } catch (error: any) {
-    console.error("Gemini Error:", error);
-    if (error.message?.includes("API_KEY_INVALID")) {
-      throw new Error("Votre clé API est invalide. Veuillez en sélectionner une autre.");
-    }
-    throw error;
+    console.error("Erreur d'analyse Gemini:", error);
+    throw new Error(error.message || "Échec de l'analyse IA. Vérifiez votre connexion.");
   }
 };

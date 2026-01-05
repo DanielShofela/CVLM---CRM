@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CVLM - CRM</title>
+    <title>CVLM - CRM Intelligent</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -11,30 +11,12 @@
         font-family: 'Inter', sans-serif;
         background-color: #f8fafc;
       }
-      #error-display {
-        display: none;
-        padding: 20px;
-        background: #fee2e2;
-        color: #991b1b;
-        margin: 20px;
-        border-radius: 8px;
-        border: 1px solid #f87171;
-        font-family: monospace;
-        font-size: 12px;
-        white-space: pre-wrap;
-        word-break: break-all;
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        z-index: 9999;
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
       }
     </style>
-    <script>
-      // Polyfill critique pour l'environnement de production
-      window.process = window.process || { env: {} };
-      window.process.env = window.process.env || {};
-    </script>
     <script type="importmap">
 {
   "imports": {
@@ -48,9 +30,8 @@
   }
 }
 </script>
-</head>
+  </head>
   <body>
-    <div id="error-display"></div>
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>
